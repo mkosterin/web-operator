@@ -25,6 +25,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	epamcomv1alpha1 "github.com/mkosterin/web-operator/api/v1alpha1"
+
+	appsv1 "k8s.io/api/apps/v1"
 )
 
 // WebReconciler reconciles a Web object
@@ -36,6 +38,9 @@ type WebReconciler struct {
 // +kubebuilder:rbac:groups=epam.com,resources=webs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=epam.com,resources=webs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=epam.com,resources=webs/finalizers,verbs=update
+// +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -48,9 +53,11 @@ type WebReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.18.4/pkg/reconcile
 func (r *WebReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
-
-	// TODO(user): your logic here
-
+	web := &epamcomv1alpha1.Web{}
+	err := r.Get(ctx, req.NamespacedName, web)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -58,5 +65,6 @@ func (r *WebReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 func (r *WebReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&epamcomv1alpha1.Web{}).
+		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }

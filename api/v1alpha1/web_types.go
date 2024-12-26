@@ -25,14 +25,8 @@ import (
 
 // WebSpec defines the desired state of Web
 type WebSpec struct {
-	// +kubebuilder:validation:Minimum=1
-	// +kubebuilder:validation:Maximum=5
-	// +kubebuilder:validation:ExclusiveMaximum=false
-
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	Size int32 `json:"size,omitempty"`
-	// +operator-sdk:csv:customresourcedefinitions:type=spec
-	ContainerPort int32 `json:"containerPort,omitempty"`
+	Image       string `json:"image,omitempty"`
+	HtmlContent string `json:"htmlContent,omitempty"`
 }
 
 // WebStatus defines the observed state of Web

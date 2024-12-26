@@ -39,14 +39,10 @@ spec:
           spec:
             description: WebSpec defines the desired state of Web
             properties:
-              containerPort:
-                format: int32
-                type: integer
-              size:
-                format: int32
-                maximum: 5
-                minimum: 1
-                type: integer
+              htmlContent:
+                type: string
+              image:
+                type: string
             type: object
           status:
             description: WebStatus defines the observed state of Web

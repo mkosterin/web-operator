@@ -1,0 +1,9 @@
+apiVersion: epam.com/v1alpha1
+kind: Web
+metadata:
+  labels:
+    app.kubernetes.io/name: web-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: web-sample
+spec:
+  # TODO(user): Add fields here

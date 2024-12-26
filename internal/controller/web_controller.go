@@ -61,6 +61,10 @@ func (r *WebReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	var web epamcomv1alpha1.Web
 	if err := r.Get(ctx, req.NamespacedName, &web); err != nil {
+		if errors.IsNotFound(err) {
+			log.Info("Web resource not found. Ignoring since object must be deleted")
+			return ctrl.Result{}, nil
+		}
 		log.Error(err, "unable to fetch Web")
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -77,15 +81,16 @@ func (r *WebReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 				"index.html": web.Spec.HtmlContent,
 			},
 		}
+		if err := ctrl.SetControllerReference(&web, cm, r.Scheme); err != nil {
+			log.Error(err, "unable to set owner reference on ConfigMap")
+			return ctrl.Result{}, err
+		}
 		if err := r.Create(ctx, cm); err != nil && !errors.IsAlreadyExists(err) {
 			log.Error(err, "unable to create ConfigMap for Web", "configMap", cm)
 			return ctrl.Result{}, err
 		}
 		log.Info("ConfigMap has been created", "configMap", cm.Name)
-		if err := ctrl.SetControllerReference(&web, cm, r.Scheme); err != nil {
-			log.Error(err, "unable to set owner reference on ConfigMap")
-			return ctrl.Result{}, err
-		}
+
 	} else if err_cm != nil {
 		log.Error(err_cm, "unable to get ConfigMap")
 		return ctrl.Result{}, err_cm
@@ -138,15 +143,15 @@ func (r *WebReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 				},
 			},
 		}
+		if err := ctrl.SetControllerReference(&web, dep, r.Scheme); err != nil {
+			log.Error(err, "unable to set owner reference on Deployment")
+			return ctrl.Result{}, err
+		}
 		if err := r.Create(ctx, dep); err != nil && !errors.IsAlreadyExists(err) {
 			log.Error(err, "unable to create Deployment for Web", "deployment", dep)
 			return ctrl.Result{}, err
 		}
 		log.Info("Deployment has been created", "deployemnt", dep.Name)
-		if err := ctrl.SetControllerReference(&web, dep, r.Scheme); err != nil {
-			log.Error(err, "unable to set owner reference on Deployment")
-			return ctrl.Result{}, err
-		}
 	} else if err_dep != nil {
 		log.Error(err_dep, "unable to get Deployment")
 		return ctrl.Result{}, err_dep
